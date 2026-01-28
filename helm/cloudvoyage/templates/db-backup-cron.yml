@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mongo-backup
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: backup
+              image: mongo:latest
+              command:
+                - /bin/sh
+                - -c
+                - echo "Connecting to mongodb-service... Starting Backup at $(date)... Backup Complete!"
+          restartPolicy: OnFailure

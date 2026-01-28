@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  # USES VARIABLE FROM values.yaml
+  replicas: {{ .Values.replicaCount }} 
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          # DYNAMIC IMAGE NAME AND TAG
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.backend.service.port }}
+          resources:
+            requests:
+              cpu: {{ .Values.backend.resources.requests.cpu }}
+            limits:
+              cpu: {{ .Values.backend.resources.limits.cpu }}
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: mongodb-secret

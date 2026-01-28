@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  # This tells the backend how to find the database
+  MONGO_URI: "mongodb://root:{{ .Values.mongodb.rootPassword }}@mongodb-service:27017/wanderlust?authSource=admin"
+  PORT: "3500"

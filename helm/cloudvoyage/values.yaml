@@ -1,0 +1,29 @@
+# Global settings
+replicaCount: 2
+
+# Backend Microservice
+backend:
+  image:
+    repository: harjotsingh2k19/cloudvoyage-backend
+    tag: "v1"
+  service:
+    port: 3500
+  resources:
+    requests:
+      cpu: "100m"
+    limits:
+      cpu: "250m"
+
+# Frontend Microservice
+frontend:
+  image:
+    repository: harjotsingh2k19/cloudvoyage-frontend
+    tag: "v1"
+  service:
+    port: 80
+
+# Database Settings
+mongodb:
+  image: mongo:latest
+  storage: 1Gi
+  rootPassword: "admin" # In real prod, this comes from Secrets, but fine for now
