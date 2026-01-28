@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # ==================================
+  # 1. Database Service (MongoDB)
+  # ==================================
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+    volumes:
+      # Optional: specific volume to persist data locally during tests
+      - mongo-data:/data/db
+
+  # ==================================
+  # 2. Backend Service (Node.js API)
+  # ==================================
+  backend:
+    # Build Context: Where is the Dockerfile?
+    build: ./Application-Code/backend
+    container_name: backend
+    ports:
+      - "3500:3500" # Map local 3500 to container 3500
+    environment:
+      # Connection String: uses 'mongodb' (service name) as the host
+      MONGO_CONN_STR: "mongodb://admin:password123@mongodb:27017/wanderlust?authSource=admin"
+      PORT: 3500
+    depends_on:
+      - mongodb
+
+  # ==================================
+  # 3. Frontend Service (React UI)
+  # ==================================
+  frontend:
+    build: 
+      context: ./Application-Code/frontend
+      # args variables are passed at build time
+      # env variables are passed at run time
+      # in our case when we pass env varaibles in frontend, React app is already baked (hardcoded). It’s too late. The variable is ignored. that is why are we are using args
+      args:
+        REACT_APP_BACKEND_URL: "http://localhost:3500/api/tasks"
+    container_name: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+# Define the volume for the database
+volumes:
+  mongo-data:

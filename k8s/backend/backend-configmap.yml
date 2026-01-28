@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: cloudvoyage
+data:
+  PORT: "3500"
+  # Connects to the 'mongodb-service' we created in the database folder
+  # user: admin | password: password123 | service name: mongodb-service | db name: wanderlust
+  MONGO_CONN_STR: "mongodb://admin:password123@mongodb-service:27017/wanderlust?authSource=admin"

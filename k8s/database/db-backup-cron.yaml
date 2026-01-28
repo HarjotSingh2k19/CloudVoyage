@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mongo-backup
+  namespace: cloudvoyage
+spec:
+  schedule: "0 0 * * *" # Cron syntax for "Every day at Midnight"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: backup
+              image: mongo:latest # Uses the Mongo tools (like mongodump)
+              # In a real app, this would run 'mongodump'. 
+              # For now, we simulate it with a log message.
+              command:
+                - /bin/sh
+                - -c
+                - echo "Connecting to mongodb-service... Starting Backup at $(date)... Backup Complete!"
+          restartPolicy: OnFailure

@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: cloudvoyage
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          # Docker Hub image
+          image: harjotsingh2k19/cloudvoyage-backend:v1
+          ports:
+            - containerPort: 3500
+          resources:
+            requests:
+              cpu: "100m"   # Minimum: 10% of a CPU core
+            limits:
+              cpu: "250m"   # Maximum: 25% of a CPU core
+          # Load variables from the ConfigMap
+          envFrom:
+            - configMapRef:
+                name: backend-config
