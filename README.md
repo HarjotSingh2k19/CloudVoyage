@@ -1,151 +1,192 @@
-# #TWSThreeTierAppChallenge
+# ☁️ CloudVoyage: Full-Stack Microservices on Kubernetes
 
-## Overview
-This repository hosts the `#TWSThreeTierAppChallenge` for the TWS community. 
-The challenge involves deploying a Three-Tier Web Application using ReactJS, NodeJS, and MongoDB, with deployment on AWS EKS. Participants are encouraged to deploy the application, add creative enhancements, and submit a Pull Request (PR). Merged PRs will earn exciting prizes!
+![Kubernetes](https://img.shields.io/badge/Kubernetes-Production%20Ready-blue?logo=kubernetes)
+![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker)
+![React](https://img.shields.io/badge/Frontend-React-61DAFB?logo=react)
+![Node.js](https://img.shields.io/badge/Backend-Node.js-339933?logo=node.js)
+![MongoDB](https://img.shields.io/badge/Database-MongoDB-47A248?logo=mongodb)
 
-**Get The Challenge here**
+Welcome to CloudVoyage, a scalable task management application built to demonstrate the journey from local containerization to advanced cloud orchestration.
 
-[![YouTube Video](https://img.youtube.com/vi/tvWQRTbMS1g/maxresdefault.jpg)](https://youtu.be/tvWQRTbMS1g?si=eki-boMemxr4PU7-)
+This project serves as a comprehensive reference architecture for migrating a Full-Stack MERN application (MongoDB, Express, React, Node) from Docker Compose to a production-grade Kubernetes Cluster with Auto-Scaling, Ingress Routing, and Self-Healing capabilities.
 
-## Prerequisites
-- Basic knowledge of Docker, and AWS services.
-- An AWS account with necessary permissions.
+## 📝 Table of Contents
 
-## Challenge Steps
-- [Application Code](#application-code)
-- [Jenkins Pipeline Code](#jenkins-pipeline-code)
-- [Jenkins Server Terraform](#jenkins-server-terraform)
-- [Kubernetes Manifests Files](#kubernetes-manifests-files)
-- [Project Details](#project-details)
-
-## Application Code
-The `Application-Code` directory contains the source code for the Three-Tier Web Application. Dive into this directory to explore the frontend and backend implementations.
-
-## Jenkins Pipeline Code
-In the `Jenkins-Pipeline-Code` directory, you'll find Jenkins pipeline scripts. These scripts automate the CI/CD process, ensuring smooth integration and deployment of your application.
-
-## Jenkins Server Terraform
-Explore the `Jenkins-Server-TF` directory to find Terraform scripts for setting up the Jenkins Server on AWS. These scripts simplify the infrastructure provisioning process.
-
-## Kubernetes Manifests Files
-The `Kubernetes-Manifests-Files` directory holds Kubernetes manifests for deploying your application on AWS EKS. Understand and customize these files to suit your project needs.
-
-## Project Details
-🛠️ **Tools Explored:**
-- Terraform & AWS CLI for AWS infrastructure
-- Jenkins, Sonarqube, Terraform, Kubectl, and more for CI/CD setup
-- Helm, Prometheus, and Grafana for Monitoring
-- ArgoCD for GitOps practices
-
-🚢 **High-Level Overview:**
-- IAM User setup & Terraform magic on AWS
-- Jenkins deployment with AWS integration
-- EKS Cluster creation & Load Balancer configuration
-- Private ECR repositories for secure image management
-- Helm charts for efficient monitoring setup
-- GitOps with ArgoCD - the cherry on top!
-
-📈 **The journey covered everything from setting up tools to deploying a Three-Tier app, ensuring data persistence, and implementing CI/CD pipelines.**
-
-## Getting Started
-To get started with this project, refer to our [comprehensive guide](https://amanpathakdevops.medium.com/advanced-end-to-end-devsecops-kubernetes-three-tier-project-using-aws-eks-argocd-prometheus-fbbfdb956d1a) that walks you through IAM user setup, infrastructure provisioning, CI/CD pipeline configuration, EKS cluster creation, and more.
-
-### Step 1: IAM Configuration
-- Create a user `eks-admin` with `AdministratorAccess`.
-- Generate Security Credentials: Access Key and Secret Access Key.
-
-### Step 2: EC2 Setup
-- Launch an Ubuntu instance in your favourite region (eg. region `us-west-2`).
-- SSH into the instance from your local machine.
-
-### Step 3: Install AWS CLI v2
-``` shell
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-sudo apt install unzip
-unzip awscliv2.zip
-sudo ./aws/install -i /usr/local/aws-cli -b /usr/local/bin --update
-aws configure
-```
-
-### Step 4: Install Docker
-``` shell
-sudo apt-get update
-sudo apt install docker.io
-docker ps
-sudo chown $USER /var/run/docker.sock
-```
-
-### Step 5: Install kubectl
-``` shell
-curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/kubectl
-chmod +x ./kubectl
-sudo mv ./kubectl /usr/local/bin
-kubectl version --short --client
-```
-
-### Step 6: Install eksctl
-``` shell
-curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-sudo mv /tmp/eksctl /usr/local/bin
-eksctl version
-```
-
-### Step 7: Setup EKS Cluster
-``` shell
-eksctl create cluster --name three-tier-cluster --region us-west-2 --node-type t2.medium --nodes-min 2 --nodes-max 2
-aws eks update-kubeconfig --region us-west-2 --name three-tier-cluster
-kubectl get nodes
-```
-
-### Step 8: Run Manifests
-``` shell
-kubectl create namespace workshop
-kubectl apply -f .
-kubectl delete -f .
-```
-
-### Step 9: Install AWS Load Balancer
-``` shell
-curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/install/iam_policy.json
-aws iam create-policy --policy-name AWSLoadBalancerControllerIAMPolicy --policy-document file://iam_policy.json
-eksctl utils associate-iam-oidc-provider --region=us-west-2 --cluster=three-tier-cluster --approve
-eksctl create iamserviceaccount --cluster=three-tier-cluster --namespace=kube-system --name=aws-load-balancer-controller --role-name AmazonEKSLoadBalancerControllerRole --attach-policy-arn=arn:aws:iam::626072240565:policy/AWSLoadBalancerControllerIAMPolicy --approve --region=us-west-2
-```
-
-### Step 10: Deploy AWS Load Balancer Controller
-``` shell
-sudo snap install helm --classic
-helm repo add eks https://aws.github.io/eks-charts
-helm repo update eks
-helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=my-cluster --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
-kubectl get deployment -n kube-system aws-load-balancer-controller
-kubectl apply -f full_stack_lb.yaml
-```
-
-### Cleanup
-- To delete the EKS cluster:
-``` shell
-eksctl delete cluster --name three-tier-cluster --region us-west-2
-```
-- To clean up rest of the stuff and not incure any cost
-```
-Stop or Terminate the EC2 instance created in step 2.
-Delete the Load Balancer created in step 9 and 10.
-Go to EC2 console, access security group section and delete security groups created in previous steps
-```
-
-## Contribution Guidelines
-- Fork the repository and create your feature branch.
-- Deploy the application, adding your creative enhancements.
-- Ensure your code adheres to the project's style and contribution guidelines.
-- Submit a Pull Request with a detailed description of your changes.
-
-## Rewards
-- Successful PR merges will be eligible for exciting prizes!
-
-## Support
-For any queries or issues, please open an issue in the repository.
+- [Introduction](#-introduction)
+- [Features](#-features)
+- [Tech Stack](#️-tech-stack)
+- [Architecture](#-architecture)
+- [Prerequisites](#-prerequisites)
+- [Phase 1: Local Development (Docker)](#-phase-1-local-development-docker)
+- [Phase 2: Production Deployment (Kubernetes)](#-phase-2-production-deployment-kubernetes)
+- [Advanced Verification (HPA & CronJobs)](#-advanced-verification-hpa--cronjobs)
+- [Project Structure](#-project-structure)
 
 ---
-Happy Learning! 🚀👨‍💻👩‍💻
+
+## 📝 Introduction
+
+CloudVoyage is a travel-themed task manager designed to handle real-world production scenarios. Unlike simple "Hello World" tutorials, this project tackles hard problems like:
+* Networking: How to route traffic using domains instead of IP addresses.
+* Persistence: How to keep database data safe when pods crash.
+* Scaling: How to handle sudden traffic spikes automatically.
+
+---
+
+## ✨ Features
+
+### 🐳 Docker & Local Development
+* Multi-Container Setup: One-click startup using `docker-compose` for local testing.
+* Optimized Images: Custom `Dockerfile` configurations for Node.js (Backend) and React (Frontend).
+* Hot Reloading: Configured for rapid development cycles.
+
+### ☸️ Kubernetes & Production
+* Ingress Controller: Domain-based routing (`wanderlust.local`) replacing raw NodePorts.
+* Stateful Architecture: MongoDB deployed as a StatefulSet with Persistent Volume Claims (PVC) to ensure zero data loss.
+* Auto-Scaling (HPA): Backend automatically scales from 2 to 10 replicas based on CPU load.
+* Automated Backups: A CronJob runs daily at midnight to secure database records.
+* Secret Management: Secure handling of database credentials using K8s Secrets.
+
+---
+
+## 🛠️ Tech Stack
+
+* Frontend: React.js, Nginx (Web Server)
+* Backend: Node.js, Express REST API
+* Database: MongoDB
+* Containerization: Docker Desktop & Docker Compose
+* Orchestration: Kubernetes (Minikube)
+* Networking: Nginx Ingress Controller
+* Monitoring: Kubernetes Metrics Server
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+graph TD
+    User(User Browser) -->|[http://wanderlust.local](http://wanderlust.local)| Ingress(Nginx Ingress Controller)
+    Ingress -->|Routes Traffic| Frontend(React Frontend Service)
+    Frontend -->|API Calls| Backend(Node.js Backend Service)
+    Backend -->|Read/Write| DB[(MongoDB StatefulSet)]
+    
+    subgraph "Resilience & Scaling"
+        HPA(Horizontal Pod Autoscaler) -.->|Auto-Scale| Backend
+        Cron(Backup CronJob) -.->|Daily Backup| DB
+    end
+
+
+🔧 Prerequisites
+Before starting, ensure you have the following tools installed:
+
+Docker Desktop (Required for building images and local testing)
+Minikube (Required for the local Kubernetes cluster)
+Kubectl (CLI tool to interact with the cluster)
+Git (Version control)
+
+🐳 Phase 1: Local Development (Docker)
+Before deploying to the cloud, we run the app locally to ensure the code works.
+
+1. Clone the Repository
+
+Bash
+git clone [https://github.com/HarjotSingh2k19/CloudVoyage.git](https://github.com/HarjotSingh2k19/CloudVoyage.git)
+cd CloudVoyage
+2. Run with Docker Compose This spins up the Frontend, Backend, and Database in isolated containers.
+
+Bash
+docker-compose up --build
+3. Access the App
+
+Frontend UI: http://localhost:3000
+
+Backend API: http://localhost:3500
+
+To stop the local containers, press Ctrl+C or run docker-compose down.
+
+☸️ Phase 2: Production Deployment (Kubernetes)
+Now we move to the "Pro" level. We will deploy the infrastructure layer by layer.
+
+1. Start the Cluster & Enable Addons
+We need the Ingress Controller (Router) and Metrics Server (Monitor).
+
+Bash
+minikube start
+minikube addons enable ingress
+minikube addons enable metrics-server
+
+2. Deploy the Database Layer (Foundation)
+Sets up MongoDB StatefulSet, Services, and Secrets.
+
+Bash
+kubectl apply -f k8s/database/
+(Wait ~30 seconds for the database pod to start)
+
+3. Deploy the Application Layer
+Deploys the Node.js Backend and React Frontend.
+
+Bash
+kubectl apply -f k8s/backend/
+kubectl apply -f k8s/frontend/
+
+4. Configure Networking (Ingress)
+Enables the custom domain routing.
+
+Bash
+kubectl apply -f k8s/ingress.yaml
+
+5. 🌐 Network Bridge (Crucial Step!)
+Since wanderlust.local is a custom domain, we must map it to the cluster.
+
+Start Tunnel: Open a new terminal and run:
+
+Bash
+sudo minikube tunnel
+Update Hosts File: Run sudo nano /etc/hosts and add:
+
+Plaintext
+127.0.0.1 wanderlust.local
+Access App: Open browser at http://wanderlust.local
+
+🧪 Advanced Verification (HPA & CronJobs)
+📈 Test Auto-Scaling
+We simulate a traffic spike to verify the backend adds more pods automatically.
+
+Monitor Scaling:
+
+Bash
+kubectl get hpa -n cloudvoyage -w
+Launch Load Generator:
+
+Bash
+kubectl run -i --tty load-generator --rm --image=busybox --restart=Never -n cloudvoyage -- /bin/sh -c "while true; do wget -q -O- http://backend-service:3500/ok; done"
+Result: Watch the REPLICAS count jump from 2 to 5+.
+
+🕒 Test Automated Backups
+Trigger the nightly backup job manually.
+
+Bash
+kubectl create job --from=cronjob/mongo-backup manual-test -n cloudvoyage
+kubectl logs -n cloudvoyage job/manual-test
+Output: "Backup Complete!"
+
+📂 Project Structure
+Plaintext
+CloudVoyage/
+├── backend/                 # Node.js Source Code & Dockerfile
+├── frontend/                # React Source Code & Dockerfile
+├── docker-compose.yml       # Local Development Config
+├── k8s/                     # Kubernetes Manifests
+│   ├── database/            # StatefulSet, PVC, Secrets, CronJob
+│   ├── backend/             # Deployment, Service, ConfigMap, HPA
+│   ├── frontend/            # Deployment, Service
+│   └── ingress.yaml         # Ingress Rules
+└── README.md                # Documentation
+
+🤝 Contributing
+Contributions are welcome! Please fork the repository and submit a pull request for review.
+
+👨‍💻 Author
+Harjot Singh GitHub: @HarjotSingh2k19
+
+Built as a Capstone Project to master Cloud-Native Architecture.
